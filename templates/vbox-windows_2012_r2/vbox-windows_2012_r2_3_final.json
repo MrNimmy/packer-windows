@@ -1,0 +1,53 @@
+{
+  "builders": [
+    {
+      "type": "virtualbox-ovf",
+      "source_path": "./output/vbox-win2012_r2_updated/vbox-win2012_r2_updated.ovf",
+      "output_directory": "./output/vbox-win2012_r2_final/",
+      "vm_name": "vbox-win2012_r2_final",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"]
+      ],
+      "guest_additions_mode": "attach",
+      "headless": true,
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "12h",
+      "shutdown_command": "C:/Scripts/sysprep.cmd",
+      "shutdown_timeout": "1h"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "script": "./scripts/install_tools_etc.ps1"
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    },
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "script": "./scripts/clean_compress.ps1"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "compression_level": 9,
+      "keep_input_artifact": true,
+      "output": "./output/boxes/vbox-win2012_r2.box",
+      "vagrantfile_template": "./templates/vbox-windows_2012_r2/vagrantfile-windows_2012_r2.template"
+    }
+  ],
+  "variables": {
+    "cpus": "2",
+    "memory_size": "2048"
+  }
+}

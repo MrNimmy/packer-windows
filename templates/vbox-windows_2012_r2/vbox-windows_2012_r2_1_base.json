@@ -1,0 +1,49 @@
+{
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "output_directory": "./output/vbox-win2012_r2_base/",
+      "vm_name" : "vbox-win2012_r2_base",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "headless": true,
+      "guest_additions_mode" : "disable",
+      "boot_wait": "2m",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "8h",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "guest_os_type": "Windows2012_64",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "{{user `autounattend`}}",
+        "./scripts/bootstrap.ps1",
+        "./scripts/unattend.xml",
+        "./scripts/oracle.cer"
+      ],
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "script": "./scripts/base_setup.ps1" 
+    }
+  ],
+  "variables": {
+    "iso_url": "/home/dstait/Documents/ISO/SVR2012R2.iso",
+    "iso_checksum_type": "md5",
+    "iso_checksum": "9a00defab26a046045d939086df78460",
+    "autounattend": "./answer_files/2012_r2/Autounattend.xml",
+    "cpus": "2",
+    "memory_size": "2048",
+    "disk_size": "61440"
+  }
+}

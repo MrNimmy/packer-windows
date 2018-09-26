@@ -1,0 +1,75 @@
+{
+  "builders": [
+    {
+      "type": "virtualbox-ovf",
+      "source_path": "./output/vbox-win2012_r2_base/vbox-win2012_r2_base.ovf",
+      "output_directory": "./output/vbox-win2012_r2_updated/",
+      "vm_name": "vbox-win2012_r2_updated",
+      "guest_additions_mode" : "disable",
+      "headless": true, 
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"]
+      ],
+       "communicator": "winrm",
+       "winrm_username": "vagrant",
+       "winrm_password": "vagrant",
+       "winrm_timeout": "12h",
+       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+       "shutdown_timeout": "1h"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "script": "./scripts/install_WMF.ps1"
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    },
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "script": "./scripts/install_update_module.ps1"
+    },
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "inline": ["{{user `install_command`}}"]
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    },
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "inline": ["{{user `install_command`}}"]
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    },
+    {
+      "type": "powershell",
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant",
+      "inline": ["{{user `install_command`}}"]
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    }
+  ],
+  "variables": {
+    "cpus": "2",
+    "memory_size": "2048",
+    "install_command": "Get-WUInstall -MicrosoftUpdate -AcceptAll -IgnoreReboot -Install"
+  }
+}
